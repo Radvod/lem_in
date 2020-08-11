@@ -6,7 +6,7 @@
 /*   By: hgalazza <hgalazza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/08/11 12:37:33 by hgalazza          #+#    #+#             */
-/*   Updated: 2020/08/11 13:38:21 by hgalazza         ###   ########.fr       */
+/*   Updated: 2020/08/11 13:58:19 by hgalazza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,6 +55,7 @@ typedef	struct		s_ant
 }					t_ant;
 
 int			get_num_ants(void);
+t_ant		*new_ant(int name, t_room *start);
 t_room		*read_rooms(void);
 void		read_links(char *line, t_room *head);
 
