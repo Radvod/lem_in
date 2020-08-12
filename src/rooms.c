@@ -6,7 +6,7 @@
 /*   By: hgalazza <hgalazza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/08/11 12:50:54 by hgalazza          #+#    #+#             */
-/*   Updated: 2020/08/11 13:34:37 by hgalazza         ###   ########.fr       */
+/*   Updated: 2020/08/12 16:03:23 by hgalazza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,6 +94,10 @@ t_room		*read_rooms(void)
 	int		ants_num;
 
 	if	((ants_num = get_num_ants()) == -1)
-		ft_error("Error");
+		ft_error("No ants!\n");
 	new = get_rooms();
+	if (start_end(NULL, NULL) != 2)
+		ft_error("No start or end!\n");
+	add_ants_to_start(ants_num, new);
+	return (new);
 }

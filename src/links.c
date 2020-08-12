@@ -29,7 +29,7 @@ static void		add_link(t_room *room, t_room *new)
 	if (!room || !new || new->is_start)
 		return ;
 	if (!room->links)
-		room-links = new_link(new);
+		room->links = new_link(new);
 	else
 	{
 		tmp = room->links;
@@ -48,9 +48,9 @@ static void		make_link(char *name1, char *name2, t_room *head)
 	link2 = NULL;
 	while ((!link1 || !link2) && head)
 	{
-		if (ft_strequ(head->room_name, name1))
+		if (ft_strequ(head->name, name1))
 			link1 = head;
-		else if (ft_strequ(head->room_name, name2))
+		else if (ft_strequ(head->name, name2))
 			link2 = head;
 		head = head->next;
 	}

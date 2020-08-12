@@ -6,7 +6,7 @@
 /*   By: hgalazza <hgalazza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/08/12 15:11:45 by hgalazza          #+#    #+#             */
-/*   Updated: 2020/08/12 15:40:09 by hgalazza         ###   ########.fr       */
+/*   Updated: 2020/08/12 15:42:57 by hgalazza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ int		print_step(t_ant *ant, t_ant **tmp)
 	ft_printf("%s", (ant == *tmp) ? "\n" : "");
 	if (!ant->room->is_start)
 		ft_printf("L%d-%s ", ant->name,\
-		ant->room->room_name);
+		ant->room->name);
 	if (!*tmp)
 		*tmp = ant;
 	if (ant->room->is_end && *tmp == ant)

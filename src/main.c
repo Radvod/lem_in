@@ -6,7 +6,7 @@
 /*   By: hgalazza <hgalazza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/08/11 12:47:17 by hgalazza          #+#    #+#             */
-/*   Updated: 2020/08/12 13:55:56 by hgalazza         ###   ########.fr       */
+/*   Updated: 2020/08/12 15:46:22 by hgalazza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ int		main(int argc, char **argv)
 	head = read_rooms();
 	start = find_start(head);
 	if (!(paths = get_paths(start)))
-		error("There are no solutions!\n");
+		ft_error("There are no solutions!\n");
 	steps = move(start, paths);
 	clear(paths, head);
 	return (0);

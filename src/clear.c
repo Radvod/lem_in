@@ -43,7 +43,7 @@ void	clear_rooms(t_room *rooms)
 
 	while (rooms)
 	{
-		ft_strdel(&rooms->room_name);
+		ft_strdel(&rooms->name);
 		clear_links(rooms->links);
 		tmp = rooms;
 		rooms = rooms->next;

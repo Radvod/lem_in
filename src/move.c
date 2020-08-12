@@ -6,7 +6,7 @@
 /*   By: hgalazza <hgalazza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/08/12 13:54:39 by hgalazza          #+#    #+#             */
-/*   Updated: 2020/08/12 14:41:46 by hgalazza         ###   ########.fr       */
+/*   Updated: 2020/08/12 15:56:54 by hgalazza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,7 @@ t_edge	*make_ants_line(t_room *start)
 	edge = e_new(new_ant(name++, start));
 	while (name < start->num_ants)
 		e_add(&edge, new_ant(name++, start));
-	return (edge)
+	return (edge);
 }
 
 int		move(t_room *start, t_paths *paths)
@@ -74,7 +74,7 @@ int		move(t_room *start, t_paths *paths)
 	while ((ant = (t_ant*)e_get(&edge)))
 	{
 		next_step(ant, paths);
-		if (!ant->room-is_end)
+		if (!ant->room->is_end)
 			e_add(&edge, ant);
 		steps += print_step(ant, &tmp);
 		if (ant->room->is_end)

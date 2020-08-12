@@ -6,7 +6,7 @@
 /*   By: hgalazza <hgalazza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/08/11 16:25:11 by hgalazza          #+#    #+#             */
-/*   Updated: 2020/08/11 17:04:40 by hgalazza         ###   ########.fr       */
+/*   Updated: 2020/08/12 15:51:25 by hgalazza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,7 @@ void	*e_get(t_edge **edge)
 	return (data);
 }
 
-void	*e_add(t_edge **edge, void *data)
+void	e_add(t_edge **edge, void *data)
 {
 	t_edge *new;
 

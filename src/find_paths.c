@@ -6,7 +6,7 @@
 /*   By: hgalazza <hgalazza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/08/11 15:39:31 by hgalazza          #+#    #+#             */
-/*   Updated: 2020/08/12 12:44:00 by hgalazza         ###   ########.fr       */
+/*   Updated: 2020/08/12 13:28:34 by hgalazza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ static void		add_all(t_room *tmp, t_edge **edge, t_links *checked)
 			if ((((t_room*)link->data)->path_num) == 0)
 			{
 				e_add(edge, link->data);
-				((t_room*)link->data)->parent = tmp;
+				((t_room*)link->data)->pre = tmp;
 			}
 			checked_add(link, checked);
 		}
@@ -63,7 +63,7 @@ static t_links	*get_path(t_room *end, t_room *start)
 	path_num++;
 	while (end != start)
 	{
-		end = end->parent;
+		end = end->pre;
 		tmp->next = new_path(end, path_num, tmp);
 		tmp = tmp->next;
 	}

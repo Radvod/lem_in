@@ -6,7 +6,7 @@
 /*   By: hgalazza <hgalazza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/08/11 12:55:41 by hgalazza          #+#    #+#             */
-/*   Updated: 2020/08/11 13:00:52 by hgalazza         ###   ########.fr       */
+/*   Updated: 2020/08/12 16:03:23 by hgalazza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,4 +34,17 @@ int		get_num_ants(void)
 		ants = -1;
 	free(line);
 	return (ants);
+}
+
+void	add_ants_to_start(int num, t_room *head)
+{
+	while (head)
+	{
+		if (head->is_start)
+		{
+			head->num_ants = num;
+			break ;
+		}
+		head = head->next;
+	}
 }
