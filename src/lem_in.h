@@ -6,7 +6,7 @@
 /*   By: hgalazza <hgalazza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/08/11 12:37:33 by hgalazza          #+#    #+#             */
-/*   Updated: 2020/08/11 16:29:17 by hgalazza         ###   ########.fr       */
+/*   Updated: 2020/08/12 12:51:58 by hgalazza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,5 +69,14 @@ void		*e_get(t_edge **edge);
 void		*e_add(t_edge **edge, void *data);
 void		e_del(t_edge **edge);
 void		e_del(t_edge **edge);
+t_links		*new_link(void *data);
+void 		checked_add(t_links *link, t_links *checked);
+int			is_checked(t_links *link, t_links *checked);
+void		clear_links(t_links *links);
+void		clear_paths(t_paths *paths);
+void		clear_rooms(t_room *rooms);
+void		clear(t_paths *paths, t_room *rooms);
+t_links		*reverse(t_links *path);
+t_links		*find_path(t_room *start);
 
 #endif

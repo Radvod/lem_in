@@ -6,7 +6,7 @@
 /*   By: hgalazza <hgalazza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/08/11 15:08:36 by hgalazza          #+#    #+#             */
-/*   Updated: 2020/08/11 15:27:27 by hgalazza         ###   ########.fr       */
+/*   Updated: 2020/08/12 13:28:34 by hgalazza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,13 @@ static t_paths *new_path(t_links *data, int num)
 	return (new);
 }
 
+static void	add_path(t_paths *path, t_links *new, int num)
+{
+	while (path->next)
+		path = path->next;
+	path->next = new_path(new, num);
+}
+
 t_paths		*get_paths(t_room *start)
 {
 	t_paths	*paths;
@@ -43,5 +50,10 @@ t_paths		*get_paths(t_room *start)
 	int		num;
 
 	num = 1;
-	paths =	new_path
+	paths =	new_path(reverse(find_path(start)), num++);
+	while ((tmp = find_path(start)))
+	{
+		add_path(paths, reverse(tmp), num++);
+	}
+	return (paths);
 }
