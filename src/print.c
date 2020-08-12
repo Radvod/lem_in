@@ -1,40 +1,29 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.c                                             :+:      :+:    :+:   */
+/*   print.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: hgalazza <hgalazza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2020/08/11 12:47:17 by hgalazza          #+#    #+#             */
-/*   Updated: 2020/08/12 13:55:56 by hgalazza         ###   ########.fr       */
+/*   Created: 2020/08/12 15:11:45 by hgalazza          #+#    #+#             */
+/*   Updated: 2020/08/12 15:40:09 by hgalazza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "lem_in.h"
 
-t_room		*find_start(t_room *head)
+int		print_step(t_ant *ant, t_ant **tmp)
 {
-	while (head)
-	{
-		if (head->is_start)
-			return (head);
-		head = head->next;
-	}
-	return (NULL);
-}
+	int step;
 
-int		main(int argc, char **argv)
-{
-	t_room	*head;
-	t_room	*start;
-	t_paths	*paths;
-	int		steps;
-
-	head = read_rooms();
-	start = find_start(head);
-	if (!(paths = get_paths(start)))
-		error("There are no solutions!\n");
-	steps = move(start, paths);
-	clear(paths, head);
-	return (0);
+	step = (ant == *tmp) ? 1 : 0;
+	ft_printf("%s", (ant == *tmp) ? "\n" : "");
+	if (!ant->room->is_start)
+		ft_printf("L%d-%s ", ant->name,\
+		ant->room->room_name);
+	if (!*tmp)
+		*tmp = ant;
+	if (ant->room->is_end && *tmp == ant)
+		*tmp = NULL;
+	return (step);
 }

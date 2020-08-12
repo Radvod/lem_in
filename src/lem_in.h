@@ -6,7 +6,7 @@
 /*   By: hgalazza <hgalazza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/08/11 12:37:33 by hgalazza          #+#    #+#             */
-/*   Updated: 2020/08/12 12:51:58 by hgalazza         ###   ########.fr       */
+/*   Updated: 2020/08/12 15:42:57 by hgalazza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,5 +78,7 @@ void		clear_rooms(t_room *rooms);
 void		clear(t_paths *paths, t_room *rooms);
 t_links		*reverse(t_links *path);
 t_links		*find_path(t_room *start);
+int			print_step(t_ant *ant, t_ant **tmp);
+int			move(t_room *start, t_paths *paths);
 
 #endif
