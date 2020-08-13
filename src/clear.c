@@ -6,53 +6,63 @@
 /*   By: hgalazza <hgalazza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/08/12 12:43:45 by hgalazza          #+#    #+#             */
-/*   Updated: 2020/08/12 12:44:00 by hgalazza         ###   ########.fr       */
+/*   Updated: 2020/08/13 17:27:19 by hgalazza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "lem_in.h"
 
-void	clear_links(t_links *links)
+void	free_paths(t_path **paths, int num)
 {
-	t_links *tmp;
+	int i;
 
-	while (links)
+	i = 0;
+	while (i < num)
 	{
-		tmp = links;
-		links = links->next;
-		free(tmp);
+		free(paths[i]);
+		i++;
 	}
+	if (paths)
+		free(paths);
+	paths = NULL;
 }
 
-void	clear_paths(t_paths *paths)
+void	free_rooms(t_colony *colony)
 {
-	t_paths *tmp;
+	int i;
 
-	while (paths)
+	i = 0;
+	while (i < (colony)->room_num && (colony)->rooms)
 	{
-		clear_links(paths->path);
-		tmp = paths;
-		paths = paths->next;
-		free(tmp);
+		free((colony)->rooms[i]->name);
+		free((colony)->rooms[i]);
+		i++;
 	}
+	if ((colony)->rooms)
+		free((colony)->rooms);
 }
 
-void	clear_rooms(t_room *rooms)
+void		free_all(t_colony *colony)
 {
-	t_room *tmp;
+	int i;
 
-	while (rooms)
+	i = 0;
+	if (colony)
 	{
-		ft_strdel(&rooms->name);
-		clear_links(rooms->links);
-		tmp = rooms;
-		rooms = rooms->next;
-		free(tmp);
+		while (i < (colony)->room_num && (colony)->link_arr)
+		{
+			if ((colony)->link_arr[i])
+				free((colony)->link_arr[i]);
+			i++;
+		}
+		if ((colony)->link_arr)
+			free((colony)->link_arr);
+		if ((colony)->rooms)
+			free_rooms(colony);
+		if ((colony)->paths)
+			free_paths((colony)->paths, (colony)->path_num);
+		if ((colony)->line)
+			str_free((colony)->line, 0);
+		free(colony);
 	}
-}
-
-void	clear(t_paths *paths, t_room *rooms)
-{
-	clear_rooms(rooms);
-	clear_paths(paths);
 }

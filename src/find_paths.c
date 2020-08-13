@@ -6,90 +6,83 @@
 /*   By: hgalazza <hgalazza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/08/11 15:39:31 by hgalazza          #+#    #+#             */
-/*   Updated: 2020/08/12 13:28:34 by hgalazza         ###   ########.fr       */
+/*   Updated: 2020/08/13 17:11:20 by hgalazza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "lem_in.h"
 
-static void		add_all(t_room *tmp, t_edge **edge, t_links *checked)
+void	in_end_room(t_colony *colony, t_room *room, t_queue **q, int i)
 {
-	t_links *link;
+	colony->link_arr[room->num][i] = 1;
+	colony->link_arr[i][room->num] = 2;
+	colony->rooms[i]->visited = 1;
+	find_path_backwards(colony, room->num);
+	free_queue(q);
+}
 
-	link = tmp->links;
-	while (link)
+void		add_node(t_colony *colony, t_queue **q, t_room *room, int i)
+{
+	t_queue		*new;
+
+	if (!(new = new_queue_node(colony->rooms[i])))
+		ft_error("Error");
+	new->room->temp_prev = room;
+	new->room->visited = 1;
+	new->room->level = find_level(colony, room->num, new->room->num);
+	push_node(q, new);
+}
+
+void		traverse_queue(t_colony *colony, t_queue **q)
+{
+	t_room		*room;
+	int			i;
+
+	room = pop_node(q);
+	i = 0;
+	while (i < colony->room_num)
 	{
-		if (!is_checked(link, checked))
+		if (i == colony->room_num - 1 && colony->link_arr[room->num][i] == 3)
 		{
-			if ((((t_room*)link->data)->path_num) == 0)
-			{
-				e_add(edge, link->data);
-				((t_room*)link->data)->pre = tmp;
-			}
-			checked_add(link, checked);
-		}
-		link = link->next;
-	}
-}
-
-static void		add_path_num(t_room *room, int num)
-{
-	if (!room->is_end && !room->is_start)
-		room->path_num = num;
-	else
-		room->path_num = 0;
-}
-
-static t_links	*new_path(void *data, int num, t_links *back)
-{
-	t_links *new;
-
-	new = (t_links*)malloc(sizeof(t_links));
-	new->data = data;
-	new->next = NULL;
-	new->back = back;
-	add_path_num(data, num);
-	return (new);
-}
-
-static t_links	*get_path(t_room *end, t_room *start)
-{
-	t_links		*path;
-	t_links		*tmp;
-	static int	path_num;
-
-	path = new_path(end, path_num, NULL);
-	tmp = path;
-	path_num++;
-	while (end != start)
-	{
-		end = end->pre;
-		tmp->next = new_path(end, path_num, tmp);
-		tmp = tmp->next;
-	}
-	return (path);
-}
-
-t_links	*find_path(t_room *start)
-{
-	t_links *path;
-	t_room	*tmp;
-	t_links *checked;
-	t_edge *edge;
-
-	path = NULL;
-	checked = new_link(start);
-	edge = e_new(start);
-	while ((tmp = (t_room*)e_get(&edge)))
-	{
-		if (tmp->is_end)
-		{
-			path = get_path(tmp, start);
+			in_end_room(colony, room, q, i);
 			break ;
 		}
-		add_all(tmp, &edge, checked);
+		else if (i != colony->room_num - 1 && colony->rooms[i]->visited == 0 &&
+				 (colony->link_arr[room->num][i] == 3 || colony->link_arr[room->num][i] == 2))
+			add_node(colony, q, room, i);
+		i++;
 	}
-	e_del(&edge);
-	clear_links(checked);
-	return (path);
+}
+
+int		end_ed_karp(t_colony *colony)
+{
+	colony->paths = colony->paths_temp;
+	colony->path_num = colony->path_num_temp;
+	return (0);
+}
+
+int		edmonds_karp(t_colony *colony)
+{
+	t_queue		*q;
+	int			n_new;
+
+	while (1)
+	{
+		refresh_visited_and_lvl(colony->rooms, colony->room_num);
+		q = new_queue_node(colony->rooms[0]);
+		while (q)
+			traverse_queue(colony, &q);
+		if ((colony->paths = pathfinder(colony)) == NULL
+			|| (!(colony->paths_temp) && colony->path_num == 0))
+			 ft_error("Path from start to end does not exist");
+		n_new = count_turns(colony);
+		if (n_new < colony->n_turns)
+			set_optimal_path(colony, n_new);
+		else
+		{
+			free_paths(colony->paths, colony->path_num);
+			break ;
+		}
+	}
+	return (end_ed_karp(colony));
 }

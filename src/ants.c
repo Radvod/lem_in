@@ -12,39 +12,88 @@
 
 #include "lem_in.h"
 
-t_ant		*new_ant(int name, t_room *start)
+void	print_move(int *is_start, int ant_name, char *next_name)
 {
-	t_ant *new;
-
-	new = (t_ant*)malloc(sizeof(t_ant));
-	new->name = name;
-	new->room = start;
-	new->path = NULL;
-	return (new);
+	if (*is_start != 1)
+		ft_printf(" ");
+	else
+		*is_start = -1;
+	ft_printf("L%d-%s", ant_name, next_name);
 }
 
-int		get_num_ants(void)
+void	move_all_in_path(t_colony *colony, t_room *room, int *is_start, int even)
 {
-	int		ants;
-	char	*line;
+	t_room	*temp;
+	int		k;
 
-	get_next_line(0, &line);
-	ants = ft_atoi(line);
-	if	(ants < 1 || ft_strchr(line, ' '))
-		ants = -1;
-	free(line);
-	return (ants);
-}
-
-void	add_ants_to_start(int num, t_room *head)
-{
-	while (head)
+	k = 0;
+	temp = room;
+	if (temp->level == MAX_INT)
+		return ;
+	if (temp->next->level == MAX_INT && temp->ant_name != -1)
 	{
-		if (head->is_start)
+		colony->ant_end++;
+		if (even == 1)
+			print_move(is_start, temp->ant_name, temp->next->name);
+		if (colony->ant_end == colony->ant_num)
+			return ;
+	}
+	while (temp->prev)
+	{
+		temp->ant_name = temp->prev->ant_name;
+		if (temp->ant_name != -1 && k % 2 == 1 && even == 1)
+			print_move(is_start, temp->ant_name, temp->name);
+		k++;
+		temp->prev->ant_name = -1;
+		temp = temp->prev;
+	}
+}
+
+t_room	*find_last_room(t_room *head)
+{
+	t_room *temp;
+
+	temp = head;
+	if (!temp->next)
+		return (temp);
+	if (!temp->next->next)
+		return (temp);
+	while (temp->next->next)
+		temp = temp->next;
+	return (temp);
+}
+
+void	move_from_start(t_colony *colony, int i, int *is_start)
+{
+	colony->paths[i]->head->ant_name = colony->ant_num - colony->ant_start + 1;
+	colony->ant_start--;
+	print_move(is_start, colony->paths[i]->head->ant_name,
+			   colony->paths[i]->head->name);
+	if (colony->paths[i]->head->level == MAX_INT)
+		colony->ant_end++;
+}
+
+void	move_ants(t_colony *colony)
+{
+	int		i;
+	int		is_start;
+	t_room	*tail;
+
+	while (colony->ant_end != colony->ant_num)
+	{
+		i = 0;
+		is_start = 1;
+		while (i < colony->path_num)
 		{
-			head->num_ants = num;
-			break ;
+			if (colony->ant_end == colony->ant_num)
+				break ;
+			tail = find_last_room(colony->paths[i]->head);
+			move_all_in_path(colony, tail, &is_start, 0);
+			move_all_in_path(colony, tail, &is_start, 1);
+			if (colony->ant_start > colony->paths[i]->comp)
+				move_from_start(colony, i, &is_start);
+			i++;
 		}
-		head = head->next;
+		ft_printf("\n");
 	}
 }

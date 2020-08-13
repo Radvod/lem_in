@@ -12,74 +12,84 @@
 
 #include "lem_in.h"
 
-t_paths	*find_free_path(t_paths *paths)
+void	flag_correction(t_colony *colony)
 {
-	while (paths)
+	int	i;
+
+	i = 0;
+	while (i < colony->room_num)
 	{
-		if (((t_room*)paths->path->next->data)->name_ant == 0)
-			return (paths);
-		paths = paths->next;
+		colony->rooms[i]->flag = 0;
+		colony->rooms[i]->label = 0;
+		colony->rooms[i]->prev = NULL;
+		i++;
 	}
-	return (NULL);
 }
 
-t_links	*choose_path(t_paths *paths, int num_on_start)
+void	level_correction(t_colony *colony, int flag, int k, int i)
 {
-	t_paths *path;
+	int	j;
 
-	if (!(path = find_free_path(paths)))
-		return (NULL);
-	if (path->len - paths->len >= num_on_start)
-		return (NULL);
-	return (path->path);
-}
-
-void	next_step(t_ant *ant, t_paths *paths)
- {
- 	if (!ant->path)
- 		ant->path = choose_path(paths, ant->room->num_ants);
- 	if (ant->path)
+	flag_correction(colony);
+	while (k != 0)
 	{
- 		ant->room->num_ants--;
- 		ant->room->name_ant = 0;
- 		ant->path = ant->path->next;
- 		ant->room = ((t_room*)(ant->path->data));
- 		ant->room->name_ant = ant->name;
- 		ant->room->num_ants++;
+		k = 0;
+		flag = 0;
+		j = i;
+		while (j < colony->room_num - 1)
+		{
+			if (colony->link_arr[k][j] == 1)
+			{
+				if (flag == 0)
+				{
+					i = j + 1;
+					flag = 1;
+				}
+				colony->rooms[j]->level = colony->rooms[k]->level + 1;
+				k = j;
+				j = 1;
+			}
+			j++;
+		}
 	}
- }
-
-t_edge	*make_ants_line(t_room *start)
-{
-	t_edge	*edge;
-	int		name;
-
-	name = 1;
-	edge = e_new(new_ant(name++, start));
-	while (name < start->num_ants)
-		e_add(&edge, new_ant(name++, start));
-	return (edge);
 }
 
-int		move(t_room *start, t_paths *paths)
+void	move_directly(t_colony *colony)
 {
-	t_edge	*edge;
-	t_ant	*ant;
-	t_ant	*tmp;
-	int		steps;
+	int		i;
+	t_room	*room;
 
-	tmp = NULL;
-	steps = 1;
-	edge = make_ants_line(start);
-	while ((ant = (t_ant*)e_get(&edge)))
+	i = 0;
+	room = colony->paths[0]->head;
+	while (i < colony->ant_num)
 	{
-		next_step(ant, paths);
-		if (!ant->room->is_end)
-			e_add(&edge, ant);
-		steps += print_step(ant, &tmp);
-		if (ant->room->is_end)
-			free(ant);
+		ft_printf("L%d-%s", i + 1, room->name);
+		if (i != colony->ant_num - 1)
+			ft_printf(" ");
+		i++;
 	}
 	ft_printf("\n");
-	return (steps);
+}
+
+int		start(t_colony *colony)
+{
+	int i;
+
+	colony->rooms[0]->level = 0;
+	colony->rooms[colony->room_num - 1]->level = MAX_INT;
+	edmonds_karp(colony);
+	if (colony->path_num == 0)
+		ft_error("Error");
+	i = 0;
+	while (colony->line[i])
+	{
+		ft_printf("%s\n", colony->line[i]);
+		i++;
+	}
+	ft_printf("\n");
+	if (colony->paths[0]->len == 1)
+		move_directly(colony);
+	else
+		move_ants(colony);
+	return (0);
 }

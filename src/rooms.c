@@ -6,98 +6,68 @@
 /*   By: hgalazza <hgalazza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/08/11 12:50:54 by hgalazza          #+#    #+#             */
-/*   Updated: 2020/08/12 16:03:23 by hgalazza         ###   ########.fr       */
+/*   Updated: 2020/08/13 18:04:53 by hgalazza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "lem_in.h"
 
-static void		set_new_room(t_room *new)
+void	get_start_end(t_colony *colony, char **str, int i)
 {
-	new->is_end = 0;
-	new->is_start = 0;
-	new->name_ant = 0;
-	new->num_ants = 0;
-	new->links = NULL;
-	new->next = NULL;
-	new->pre = NULL;
-}
+	int j;
 
-static int			start_end(char *line, t_room *new)
-{
-	static int	i_s;
-	static int i_e;
-
-	if (!line && !new)
-		return(i_s + i_e);
-	if (ft_strstr(line, "##start"))
-		new->is_start = 1;
-	else if (ft_strstr(line, "##end"))
-		new->is_end = 1;
+	if (ft_strcmp(colony->line[i - 1], "##start") == 0)
+		j = 0;
 	else
-		return (0);
-	i_e += (new->is_end) ? 1 : 0;
-	i_s += (new->is_start) ? 1 : 0;
-	if (i_e > 1 || i_s > 1)
-		ft_error("Error");
-	return(1);
+		j = colony->room_num - 1;
+	if (!(colony->rooms[j]->name = ft_memalloc(ft_strlen(str[0]) + 1)))
+		ft_error("Room initialization error");
+	if (colony->rooms[j]->name[0] == 'L' || colony->rooms[j]->name[0] == '#')
+		ft_error("Invalid characters in the room name");
+	valid_coord(colony, str, j);
+	colony->rooms[j]->num = j;
 }
 
-static t_room		*new_room(char	*line)
+void		get_out_room(t_colony *colony, char **str)
 {
-	t_room	*new;
-	char	**data;
-	char	*new_line;
-
-	new_line = line;
-	new = (t_room*)malloc(sizeof(t_room));
-	set_new_room(new);
-	if (start_end(line, new))
-		get_next_line(0, &new_line);
-	data = ft_strsplit(new_line, ' ');
-	new->name = ft_strdup(data[0]);
-	new->y = ft_atoi(data[1]);
-	new->x = ft_atoi(data[2]);
-	ft_stackfree(data);
-	if (new_line != line)
-		free(new_line);
-	return (new);
+	if (!(colony->rooms[colony->i]->name = ft_strjoin(str[0], "'")))
+		ft_error("Name error!");
+	if (colony->rooms[colony->i]->name[0] == 'L' ||
+			colony->rooms[colony->i]->name[0] == '#')
+		ft_error("L or # in room name!");
+	valid_coord(colony, str, colony->i);
+	colony->rooms[colony->i]->num = colony->i;
+	colony->rooms[colony->i]->d_flag = colony->i - 1;
+	colony->link_arr[colony->i][colony->i - 1] = 4;
+	colony->link_arr[colony->i - 1][colony->i] = 3;
+	colony->i++;
 }
-static t_room		*get_rooms(void)
-{
-	t_room	*head;
-	t_room	*tmp;
-	char	*line;
 
-	get_next_line(0, &line);
-	head = new_room(line);
-	free(line);
-	tmp = head;
-	while (get_next_line(0, &line))
+int		get_room(t_colony *colony, char *line, int i, int j)
+{
+	char	**str;
+
+	if (!(ft_check_space(line)))
+		ft_error("Room error!");
+	str = ft_strsplit(line, ' ');
+	while (str[j])
+		j++;
+	if (j != 3)
 	{
-		if (is_comment(line))
-			continue ;
-		if (ft_strchr(line, '-'))
-			break ;
-		tmp->next = new_room(line);
-		tmp = tmp->next;
-		free(line);
+		ft_printf("%d\n", j);
+		ft_error("Room error!");
 	}
-	read_links(line, head);
-	free(line);
-	return (head);
-}
-
-t_room		*read_rooms(void)
-{
-	t_room	*new;
-	int		ants_num;
-
-	if	((ants_num = get_num_ants()) == -1)
-		ft_error("No ants!\n");
-	new = get_rooms();
-	if (start_end(NULL, NULL) != 2)
-		ft_error("No start or end!\n");
-	add_ants_to_start(ants_num, new);
-	return (new);
+	j = start_end_check(colony, i - 1, str);
+	if (j == 0)
+		return (0);
+	if (!(colony->rooms[colony->i]->name = ft_memalloc(ft_strlen(str[0]) + 1)))
+		ft_error("Error");
+	ft_strcpy(colony->rooms[colony->i]->name, str[0]);
+	valid_coord(colony, str, colony->i);
+	colony->rooms[colony->i]->num = colony->i;
+	colony->i++;
+	colony->rooms[colony->i - 1]->d_flag = colony->i;
+	get_out_room(colony, str);
+	str_free(str, 0);
+	return (0);
 }
