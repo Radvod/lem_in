@@ -12,7 +12,7 @@
 
 #include "lem_in.h"
 
-void	count_move_all_in_path(t_colony *colony, t_room *room)
+void	count_move_all_in_path(t_lem_in *l_i, t_room *room)
 {
 	t_room *temp;
 
@@ -21,8 +21,8 @@ void	count_move_all_in_path(t_colony *colony, t_room *room)
 		return ;
 	if (temp->temp_next->level == MAX_INT && temp->ant_name != -1)
 	{
-		colony->ant_end++;
-		if (colony->ant_end == colony->ant_num)
+		l_i->ant_end++;
+		if (l_i->ant_end == l_i->ant_num)
 			return ;
 	}
 	while (temp->temp_prev)
@@ -33,22 +33,22 @@ void	count_move_all_in_path(t_colony *colony, t_room *room)
 	}
 }
 
-void	count_move_from_start(t_colony *colony, int i)
+void	count_move_from_start(t_lem_in *l_i, int i)
 {
-	colony->paths[i]->head->ant_name = colony->ant_num - colony->ant_start + 1;
-	colony->ant_start--;
-	if (colony->paths[i]->head->level == MAX_INT)
-		colony->ant_end++;
+	l_i->paths[i]->head->ant_name = l_i->ant_num - l_i->ant_start + 1;
+	l_i->ant_start--;
+	if (l_i->paths[i]->head->level == MAX_INT)
+		l_i->ant_end++;
 }
 
-void	no_ants(t_colony *colony)
+void	no_ants(t_lem_in *lem_in)
 {
 	int i;
 
 	i = 0;
-	while (i < colony->room_num)
+	while (i < lem_in->room_num)
 	{
-		colony->rooms[i]->ant_name = -1;
+		lem_in->rooms[i]->ant_name = -1;
 		i++;
 	}
 }
@@ -67,30 +67,30 @@ t_room	*count_find_last_room(t_room *head)
 	return (temp);
 }
 
-int		count_turns(t_colony *colony)
+int		count_turns(t_lem_in *l_i)
 {
 	int		i;
 	t_room	*tail;
 	int		count;
 
 	count = 0;
-	while (colony->ant_end != colony->ant_num)
+	while (l_i->ant_end != l_i->ant_num)
 	{
 		i = -1;
-		while (++i < colony->path_num)
+		while (++i < l_i->path_num)
 		{
-			if (colony->ant_end == colony->ant_num)
+			if (l_i->ant_end == l_i->ant_num)
 				break ;
-			tail = count_find_last_room(colony->paths[i]->head);
-			count_move_all_in_path(colony, tail);
-			count_move_all_in_path(colony, tail);
-			if (colony->ant_start > colony->paths[i]->comp)
-				count_move_from_start(colony, i);
+			tail = count_find_last_room(l_i->paths[i]->head);
+			count_move_all_in_path(l_i, tail);
+			count_move_all_in_path(l_i, tail);
+			if (l_i->ant_start > l_i->paths[i]->comp)
+				count_move_from_start(l_i, i);
 		}
 		count++;
 	}
-	colony->ant_start = colony->ant_end;
-	colony->ant_end = 0;
-	no_ants(colony);
+	l_i->ant_start = l_i->ant_end;
+	l_i->ant_end = 0;
+	no_ants(l_i);
 	return (count);
 }

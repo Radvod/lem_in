@@ -12,62 +12,67 @@
 
 #include "lem_in.h"
 
-void	get_start_end(t_colony *colony, char **str, int i)
+int		get_end_or_start_room(t_lem_in *l_i, char **str, int i)
 {
-	int j;
+	int		j;
 
-	if (ft_strcmp(colony->line[i - 1], "##start") == 0)
+	if (ft_strcmp(l_i->line[i - 1], "##start") == 0)
 		j = 0;
 	else
-		j = colony->room_num - 1;
-	if (!(colony->rooms[j]->name = ft_memalloc(ft_strlen(str[0]) + 1)))
-		ft_error("Room initialization error");
-	if (colony->rooms[j]->name[0] == 'L' || colony->rooms[j]->name[0] == '#')
-		ft_error("Invalid characters in the room name");
-	valid_coord(colony, str, j);
-	colony->rooms[j]->num = j;
+		j = l_i->room_num - 1;
+	if (!(l_i->rooms[j]->name = ft_memalloc(ft_strlen(str[0]) + 1)))
+		return (ERROR);
+	ft_strcpy(l_i->rooms[j]->name, str[0]);
+	if (l_i->rooms[j]->name[0] == 'L' || l_i->rooms[j]->name[0] == '#')
+		return (ERROR);
+	if (coord_valid(l_i, str, j) == ERROR)
+		return (ERROR);
+	l_i->rooms[j]->num = j;
+	return (0);
 }
 
-void		get_out_room(t_colony *colony, char **str)
+int		get_out_room(t_lem_in *l_i, char **str)
 {
-	if (!(colony->rooms[colony->i]->name = ft_strjoin(str[0], "'")))
-		ft_error("Name error!");
-	if (colony->rooms[colony->i]->name[0] == 'L' ||
-			colony->rooms[colony->i]->name[0] == '#')
-		ft_error("L or # in room name!");
-	valid_coord(colony, str, colony->i);
-	colony->rooms[colony->i]->num = colony->i;
-	colony->rooms[colony->i]->d_flag = colony->i - 1;
-	colony->link_arr[colony->i][colony->i - 1] = 4;
-	colony->link_arr[colony->i - 1][colony->i] = 3;
-	colony->i++;
+	if (!(l_i->rooms[l_i->i]->name = ft_strjoin(str[0], "'")))
+		return (error(-1, str));
+	if (l_i->rooms[l_i->i]->name[0] == 'L' ||
+		l_i->rooms[l_i->i]->name[0] == '#')
+		return (error(7, str));
+	if (coord_valid(l_i, str, l_i->i) == ERROR)
+		return (error(8, str));
+	l_i->rooms[l_i->i]->num = l_i->i;
+	l_i->rooms[l_i->i]->d_flag = l_i->i - 1;
+	l_i->link_arr[l_i->i][l_i->i - 1] = 4;
+	l_i->link_arr[l_i->i - 1][l_i->i] = 3;
+	l_i->i++;
+	return (0);
 }
 
-int		get_room(t_colony *colony, char *line, int i, int j)
+int		get_room(t_lem_in *l_i, char *line, int i, int j)
 {
 	char	**str;
 
-	if (!(ft_check_space(line)))
-		ft_error("Room error!");
+	if (ft_check_space(line) == ERROR)
+		return (error(7, NULL));
 	str = ft_strsplit(line, ' ');
 	while (str[j])
 		j++;
 	if (j != 3)
-	{
-		ft_printf("%d\n", j);
-		ft_error("Room error!");
-	}
-	j = start_end_check(colony, i - 1, str);
-	if (j == 0)
+		return (error(7, str));
+	if ((j = start_end_room_check(l_i, i - 1, str)) == ERROR)
+		return (ERROR);
+	else if (j == 0)
 		return (0);
-	if (!(colony->rooms[colony->i]->name = ft_memalloc(ft_strlen(str[0]) + 1)))
-		ft_error("Error");
-	ft_strcpy(colony->rooms[colony->i]->name, str[0]);
-	valid_coord(colony, str, colony->i);
-	colony->rooms[colony->i]->num = colony->i;
-	colony->i++;
-	colony->rooms[colony->i - 1]->d_flag = colony->i;
-	get_out_room(colony, str);
+	if (!(l_i->rooms[l_i->i]->name = ft_memalloc(ft_strlen(str[0]) + 1)))
+		return (error(-1, str));
+	ft_strcpy(l_i->rooms[l_i->i]->name, str[0]);
+	if (coord_valid(l_i, str, l_i->i) == ERROR)
+		return (error(8, str));
+	l_i->rooms[l_i->i]->num = l_i->i;
+	l_i->i++;
+	l_i->rooms[l_i->i - 1]->d_flag = l_i->i;
+	if (get_out_room(l_i, str) == ERROR)
+		return (ERROR);
 	str_free(str, 0);
 	return (0);
 }

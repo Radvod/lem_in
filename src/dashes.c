@@ -12,61 +12,62 @@
 
 #include "lem_in.h"
 
-void	second_name(t_colony *colony, char *str1, int i)
+int		second_name(t_lem_in *l_i, char *str1, int i)
 {
-	while (i < colony->room_num)
+	while (i < l_i->room_num)
 	{
-		if (ft_strcmp(colony->rooms[i]->name, str1) == 0 && colony->j != i)
+		if (ft_strcmp(l_i->rooms[i]->name, str1) == 0 && l_i->j != i)
 			break ;
 		i++;
 	}
 	free(str1);
-	if (i < colony->room_num)
+	if (i < l_i->room_num)
 	{
-		is_link(colony, colony->j, i, NULL);
-		colony->j = 0;
-		return ;
+		if (is_link(l_i, l_i->j, i, NULL) == ERROR)
+			return (ERROR);
+		l_i->j = 0;
+		return (0);
 	}
-	ft_error("Error");
+	return (ERROR);
 }
 
-int		first_name(t_colony *colony, const char *line, int k, const int *len)
+int		first_name(t_lem_in *l_i, const char *line, int k, const int *len)
 {
 	char	*str1;
 	int		i;
 
 	i = 0;
-	while (colony->j < k)
+	while (l_i->j < k)
 	{
-		if (!(str1 = ft_memalloc(len[colony->j] + 1)))
-			ft_error("Error");
-		str1 = ft_strncpy(str1, line, len[colony->j]);
-		str1[len[colony->j] + 1] = '\0';
-		while (i < colony->room_num)
+		if (!(str1 = ft_memalloc(len[l_i->j] + 1)))
+			return (ERROR);
+		str1 = ft_strncpy(str1, line, len[l_i->j]);
+		str1[len[l_i->j] + 1] = '\0';
+		while (i < l_i->room_num)
 		{
-			if (ft_strcmp(colony->rooms[i]->name, str1) == 0)
+			if (ft_strcmp(l_i->rooms[i]->name, str1) == 0)
 				break ;
 			i++;
 		}
 		free(str1);
-		if (i < colony->room_num)
+		if (i < l_i->room_num)
 			break ;
-		colony->j++;
+		l_i->j++;
 		i = 0;
 	}
-	if (colony->j == k)
-		ft_error("Error");
+	if (l_i->j == k)
+		return (ERROR);
 	return (i);
 }
 
-void	len_search(const char *line, t_colony *colony, int k, int *len)
+void	len_search(const char *line, t_lem_in *l_i, int k, int *len)
 {
 	int		i;
 
 	i = 1;
-	if (k != (int)ft_strlen(line) && colony->j == 0)
+	if (k != (int)ft_strlen(line) && l_i->j == 0)
 		i = 0;
-	colony->j = 0;
+	l_i->j = 0;
 	if (i == 1)
 		len[0] = 1;
 	else
@@ -79,53 +80,56 @@ void	len_search(const char *line, t_colony *colony, int k, int *len)
 	{
 		if (line[i] == '-')
 		{
-			colony->j++;
-			len[colony->j] = len[colony->j - 1];
+			l_i->j++;
+			len[l_i->j] = len[l_i->j - 1];
 		}
-		len[colony->j] += 1;
+		len[l_i->j] += 1;
 		i++;
 	}
 }
 
-int		only_dashes(t_colony *colony, const char *line, int i, int k)
+int		only_dashes(t_lem_in *l_i, const char *line, int i, int k)
 {
 	while (line[i] == '-')
 		i++;
-	colony->j = i;
+	l_i->j = i;
 	while (line[i] != '\0')
 	{
 		if (line[i] == '-')
 			k++;
 		i++;
 	}
-	if (k == 0 && line[colony->j] != '\0')
-		k = colony->j;
+	if (k == 0 && line[l_i->j] != '\0')
+		k = l_i->j;
 	if (k == 0)
 		k = ft_strlen(line);
 	return (k);
 }
 
-void	many_dashes_link(t_colony *colony, const char *line, int i)
+int		many_dashes_link(t_lem_in *l_i, const char *line, int i)
 {
 	int		k;
 	int		flag;
 	int		*len;
 	char	*str1;
 
-	k = only_dashes(colony, line, i, 0);
-	flag = colony->j;
+	k = only_dashes(l_i, line, i, 0);
+	flag = l_i->j;
 	if (!(len = (int *)malloc(sizeof(int) * k + 1)))
-		ft_error("Error");
-	len_search(line, colony, k, len);
-	len[colony->j + 1] = -1;
-	colony->j = 0;
-	i = first_name(colony, line, k, len);
+		return (ERROR);
+	len_search(line, l_i, k, len);
+	len[l_i->j + 1] = -1;
+	l_i->j = 0;
+	if ((i = first_name(l_i, line, k, len)) == ERROR)
+		return (free_len(len));
 	if (k == (int)ft_strlen(line) || flag != 0)
 		k--;
-	if (!(str1 = ft_memalloc(len[k] - len[colony->j])))
-		ft_error("Error");
-	str1 = ft_strfromcpy(str1, line, len[colony->j] + 1);
-	colony->j = i;
-	second_name(colony, str1, 0);
+	if (!(str1 = ft_memalloc(len[k] - len[l_i->j])))
+		return (free_len(len));
+	str1 = ft_strfromcpy(str1, line, len[l_i->j] + 1);
+	l_i->j = i;
+	if (second_name(l_i, str1, 0) == ERROR)
+		return (free_len(len));
 	free(len);
+	return (0);
 }

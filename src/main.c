@@ -12,21 +12,21 @@
 
 #include "lem_in.h"
 
-char		**init_link_arr(t_colony *colony)
+char		**init_link_arr(t_lem_in *l_i)
 {
 	char	**new;
 	int		i;
 	int		j;
 
-	if (!(new = (char **)malloc(sizeof(char *) * colony->room_num)))
-		ft_error("Initialization error");
+	if (!(new = (char **)malloc(sizeof(char *) * l_i->room_num)))
+		return (NULL);
 	i = 0;
 	j = 0;
-	while (i < colony->room_num)
+	while (i < l_i->room_num)
 	{
-		if (!(new[i] = (char *)malloc(sizeof(char) * colony->room_num)))
-			ft_error("Initialization error");
-		while (j < colony->room_num)
+		if (!(new[i] = (char *)malloc(sizeof(char) * l_i->room_num)))
+			return (NULL);
+		while (j < l_i->room_num)
 		{
 			new[i][j] = 0;
 			j++;
@@ -42,7 +42,7 @@ t_room		*init_room(void)
 	t_room		*new;
 
 	if (!(new = (t_room *)malloc(sizeof(struct s_room))))
-		ft_error("Initialization error");
+		return (NULL);
 	new->level = -1;
 	new->x = 0;
 	new->y = 0;
@@ -61,28 +61,12 @@ t_room		*init_room(void)
 	return (new);
 }
 
-void		map_read(t_colony *colony)
+t_lem_in	*init_l_i(void)
 {
-	char	*buff;
-	int		data;
+	t_lem_in	*new;
 
-	buff = (char*)malloc(B_SIZE + 1);
-	if	((data = read(0, buff, B_SIZE)) < 32)
-		ft_error("Map reading error");
-	buff[data] = '\0';
-	empty_line_check(buff);
-	colony->line = ft_strsplit(buff, '\n');
-	room_num_check(colony, 0);
-	get_map(colony, -1);
-	free(buff);
-}
-
-t_colony	*init_colony(void)
-{
-	t_colony *new;
-
-	if	(!(new = (t_colony*)malloc(sizeof(struct s_colony))))
-		ft_error("Initialization error");
+	if (!(new = (t_lem_in *)malloc(sizeof(struct s_lem_in))))
+		return (NULL);
 	new->ant_num = 0;
 	new->ant_start = 0;
 	new->ant_end = 0;
@@ -102,22 +86,49 @@ t_colony	*init_colony(void)
 	return (new);
 }
 
-int		main(int argc, char **argv)
+int		map_reading(int fd, t_lem_in *l_i)
 {
-	t_colony	*colony;
+	char	*buff;
+	int		data;
+
+	buff = (char*)ft_memalloc(B_SIZE + 1);
+	if ((data = read(fd, buff, B_SIZE)) < 32)
+	{
+		ft_printf("Error map\n");
+		return (buff_free(buff));
+	}
+	buff[data] = '\0';
+	if (empty_line_check(buff) == ERROR)
+		return (buff_free(buff));
+	l_i->line = ft_strsplit(buff, '\n');
+	if (room_num_check(l_i, 0) == ERROR)
+		return (buff_free(buff));
+	if (get_map(l_i, -1) == ERROR)
+		return (buff_free(buff));
+	free(buff);
+	return (0);
+}
+
+int		main(int ac, char **av)
+{
+	t_lem_in	*l_i;
 	char		tmp;
 
-	if (argc == 1 && argv[1] == NULL)
+	if (ac == 1 && av[1] == NULL)
 	{
-		colony = init_colony();
+		if (!(l_i = init_l_i()))
+			return (0);
 		if (read(0, &tmp, 0) == 0)
-			map_read(colony);
+		{
+			if (map_reading(0, l_i) == ERROR)
+				return (free_all(l_i));
+		}
 		else
-			ft_error("Error");
+			return (free_all(l_i));
 	}
 	else
 		return (0);
-	start(colony);
-	free_all(colony);
-	return (0);
+	start_algo(l_i);
+	free_all(l_i);
+	exit(0);
 }

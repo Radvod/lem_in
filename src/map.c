@@ -6,32 +6,33 @@
 /*   By: hgalazza <hgalazza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/08/13 14:03:55 by hgalazza          #+#    #+#             */
-/*   Updated: 2020/08/13 17:32:59 by hgalazza         ###   ########.fr       */
+/*   Updated: 2020/08/17 12:29:49 by hgalazza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "lem_in.h"
 
-void	is_start_end(t_colony *colony, char **line, int i)
+int		get_command(t_lem_in *l_i, char **line, int i)
 {
 	if (ft_strcmp(line[i], "##end") == 0 &&
 		ft_strcmp(line[i - 1], "##start") == 0)
-		ft_error("No start and end");
+		return (error(11, NULL));
 	if (ft_strcmp(line[i], "##end") == 0)
 	{
-		if (colony->e_r_flag == 1)
-			ft_error("More then one end");
-		colony->e_r_flag = 1;
+		if (l_i->e_r_flag == 1)
+			return (error(10, NULL));
+		l_i->e_r_flag = 1;
 	}
 	else if (ft_strcmp(line[i], "##start") == 0)
 	{
-		if (colony->s_r_flag == 1)
-			ft_error("More then one start");
-		colony->s_r_flag = 1;
+		if (l_i->s_r_flag == 1)
+			return (error(10, NULL));
+		l_i->s_r_flag = 1;
 	}
+	return (0);
 }
 
-int		get_link(t_colony *colony, char *line, int i, int j)
+int		get_link(t_lem_in *l_i, char *line, int i, int j)
 {
 	int		k;
 	char	**str;
@@ -40,25 +41,27 @@ int		get_link(t_colony *colony, char *line, int i, int j)
 	str = ft_strsplit(line, '-');
 	if (str[2] || !str[0] || !str[1])
 	{
-		many_dashes_link(colony, line, 0);
+		if (many_dashes_link(l_i, line, 0) == ERROR)
+			return (error(-1, str));
 		return (str_free(str, 0));
 	}
-	while (i < colony->room_num)
+	while (i < l_i->room_num)
 	{
-		if (ft_strcmp(colony->rooms[i]->name, str[0]) == 0 &&
-			ft_strcmp(colony->rooms[i]->name, str[1]) == 0)
-			ft_error("Link error!");
-		if (ft_strcmp(colony->rooms[i]->name, str[0]) == 0)
-			j = colony->rooms[i]->num;
-		if (ft_strcmp(colony->rooms[i]->name, str[1]) == 0)
-			k = colony->rooms[i]->num;
+		if (ft_strcmp(l_i->rooms[i]->name, str[0]) == 0 &&
+			ft_strcmp(l_i->rooms[i]->name, str[1]) == 0)
+			return (error(5, str));
+		if (ft_strcmp(l_i->rooms[i]->name, str[0]) == 0)
+			j = l_i->rooms[i]->num;
+		if (ft_strcmp(l_i->rooms[i]->name, str[1]) == 0)
+			k = l_i->rooms[i]->num;
 		i++;
 	}
-	is_link(colony, j, k, str);
+	if (is_link(l_i, j, k, str) == ERROR)
+		return (ERROR);
 	return (str_free(str, 0));
 }
 
-void	get_ant(t_colony *colony, char *line)
+int		get_ant(t_lem_in *l_i, char *line)
 {
 	int		j;
 
@@ -66,54 +69,63 @@ void	get_ant(t_colony *colony, char *line)
 	while (line[j] != '\0')
 	{
 		if (ft_isdigit(line[j]) == 0)
-			ft_error("Ants error!");
+			return (ERROR);
 		j++;
 	}
-	if (ft_atoi_plus(&colony->ant_num, line) == -1)
-		ft_error("More ants then MAX_INT");
-	if (colony->ant_num <= 0)
-		ft_error("No ants!");
-	colony->ant_start = colony->ant_num;
+	if (ft_atoi_plus(&l_i->ant_num, line) == -1)
+		return (ERROR);
+	if (l_i->ant_num <= 0)
+		return (ERROR);
+	l_i->ant_start = l_i->ant_num;
+	return (0);
 }
 
-void		get_map_p2(t_colony *colony, int i)
+int		get_map_p2(t_lem_in *l_i, int i)
 {
-	if (colony->line[i][0] != '#')
+	if (l_i->line[i][0] != '#')
 	{
-		if (link_or_room(colony, colony->line[i], 1) == 0)
+		if (link_or_room(l_i, l_i->line[i], 0) == ERROR)
+			return (ERROR);
+		else if (link_or_room(l_i, l_i->line[i], 1) == 0)
 		{
-			if (colony->e_r_flag == 0 || colony->s_r_flag == 0 ||
-				get_link(colony, colony->line[i], 0, -1) == -1)
-				ft_error("No room or links");
-			colony->flag = 1;
+			if (l_i->e_r_flag == 0 || l_i->s_r_flag == 0 ||
+				get_link(l_i, l_i->line[i], 0, -1) == ERROR)
+				return (ERROR);
+			l_i->flag = 1;
 		}
 		else
 		{
-			if (colony->flag == 1 || get_room(colony, colony->line[i], i, 0) != 0)
-				ft_error("Error");
+			if (l_i->flag == 1 || get_room(l_i, l_i->line[i], i, 0) == ERROR)
+				return (ERROR);
 		}
 	}
+	return (0);
 }
 
-void		get_map(t_colony *colony, int i)
+int		get_map(t_lem_in *l_i, int i)
 {
-	if (!(colony->rooms = (t_room **)malloc(sizeof(t_room*) * colony->room_num)))
-		ft_error("Error");
-	while (++i < colony->room_num)
-		colony->rooms[i] = init_room();
-	colony->link_arr = init_link_arr(colony);
+	if (!(l_i->rooms = (t_room **)malloc(sizeof(t_room*) * l_i->room_num)))
+		return (ERROR);
+	while (++i < l_i->room_num)
+		if (!(l_i->rooms[i] = init_room()))
+			return (ERROR);
+	if (!(l_i->link_arr = init_link_arr(l_i)))
+		return (ERROR);
 	i = 0;
-	while (colony->line[i][0] == '#')
+	while (l_i->line[i][0] == '#')
 		i++;
-	get_ant(colony, colony->line[i]);
+	if (get_ant(l_i, l_i->line[i]) == ERROR)
+		return (error(2, NULL));
 	i++;
-	while (colony->line[i])
+	while (l_i->line[i])
 	{
-		get_map_p2(colony, i);
-		if (colony->i >= colony->room_num)
-			ft_error("Error");
+		if (get_map_p2(l_i, i) == ERROR)
+			return (ERROR);
+		if (l_i->i >= l_i->room_num)
+			return (ERROR);
 		i++;
 	}
-	if (colony->e_l_flag != 1 || colony->s_l_flag != 1)
-		ft_error("No end or start link!");
+	if (l_i->e_l_flag != 1 || l_i->s_l_flag != 1)
+		return (error(1, NULL));
+	return (0);
 }

@@ -6,7 +6,7 @@
 /*   By: hgalazza <hgalazza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/08/11 12:37:33 by hgalazza          #+#    #+#             */
-/*   Updated: 2020/08/13 17:34:42 by hgalazza         ###   ########.fr       */
+/*   Updated: 2020/08/17 12:34:31 by hgalazza         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,18 +15,19 @@
 # define LEM_IN_H
 # define MAX_INT 2147483647
 # define MIN_INT -2147483648
+# define ERROR -1
 # define B_SIZE 3000000
 
 # include "../libft/libft.h"
 # include "../utils/utils.h"
 
-typedef	struct		s_room
+typedef struct		s_room
 {
-	char			*name;
 	int				num;
+	char			*name;
+	int				level;
 	int				x;
 	int				y;
-	int				level;
 	int				num_input;
 	int				num_output;
 	int				visited;
@@ -40,21 +41,21 @@ typedef	struct		s_room
 	int				ant_name;
 }					t_room;
 
-typedef struct		s_path
-{
-	t_room			*head;
-	int				comp;
-	int				len;
-	struct	s_paths	*next;
-}					t_path;
-
 typedef struct		s_queue
 {
 	t_room			*room;
-	struct	s_queue	*next;
+	struct s_queue	*next;
 }					t_queue;
 
-typedef struct		s_colony
+typedef struct		s_path
+{
+	t_room			*head;
+	int				len;
+	int				comp;
+	struct s_path	*next;
+}					t_path;
+
+typedef struct		s_lem_in
 {
 	int				i;
 	int				j;
@@ -77,40 +78,52 @@ typedef struct		s_colony
 	int				path_num_temp;
 	int				bfs_level;
 	int				n_turns;
-}					t_colony;
+}					t_lem_in;
 
-void		free_paths(t_path **paths, int num);
-void		valid_coord(t_colony *colony, char **str, int n);
-void		link_error(t_colony *colony, int j, int k, char **str);
-void		is_link(t_colony *colony, int j, int k, char **str);
-void		same_nc_valid(t_colony *colony);
-int			link_or_room(t_colony *colony, const char *line, int flag);
-void		empty_line_check(const char *line);
-int			start_end_check(t_colony *colony, int i, char **str);
-void		is_start_end(t_colony *colony, char **line, int i);
-void		room_num_check(t_colony *colony, int i);
-void		many_dashes_link(t_colony *colony, const char *line, int i);
-int			get_room(t_colony *colony, char *line, int i, int j);
-char		**init_link_arr(t_colony *colony);
-void		get_map(t_colony *colony, int i);
-void		get_start_end(t_colony *colony, char **str, int i);
-t_room		*init_room(void);
-t_queue		*new_queue_node(t_room *room);
-void		find_path_backwards(t_colony *colony, int room_id);
-int			find_level(t_colony *colony, int prev, int curr);
-int			count_turns(t_colony *colony);
-void		define_comp_num(t_path **paths, int num);
-void		move_ants(t_colony *colony);
-void		sort_paths(t_path **paths, int right);
-void		free_all(t_colony *colony);
-int			link_or_room(t_colony *colony, const char *line, int flag);
-void		push_node(t_queue **queue, t_queue *node);
-t_room		*pop_node(t_queue **queue);
-void		free_queue(t_queue **queue);
-void		set_optimal_path(t_colony *colony, int n_new);
-void		refresh_visited_and_lvl(t_room **rooms, int num);
-t_path		**pathfinder(t_colony *colony);
-int			edmonds_karp(t_colony *colony);
-int			start(t_colony *colony);
+int					empty_line_check(const char *line);
+int					get_map(t_lem_in *l_i, int i);
+int					link_or_room(t_lem_in *l_i, const char *line, int flag);
+int					coord_valid(t_lem_in *l_i, char **str, int n);
+int					get_room(t_lem_in *l_i, char *line, int i, int j);
+int					get_command(t_lem_in *l_i, char **line, int i);
+t_lem_in			*init_l_i(void);
+t_room				*init_room(void);
+char				**init_link_arr(t_lem_in *l_i);
+int					same_name_and_coord_valid(t_lem_in *l_i);
+int					is_link(t_lem_in *l_i, int j, int k, char **str);
+int					room_num_check(t_lem_in *l_i, int i);
+int					get_end_or_start_room(t_lem_in *l_i, char **str, int i);
+int					start_end_room_check(t_lem_in *l_i, int i, char **str);
+int					many_dashes_link(t_lem_in *l_i, const char *line, int i);
+void				level_correction(t_lem_in *l_i, int flag, int k, int i);
+int					ft_str_free(char **str, int i);
+int					buff_free(char *buff);
+int					error(int flag, char **str);
+int					free_len(int *len);
+t_queue				*new_queue_node(t_room *room);
+void				push_node(t_queue **queue, t_queue *node);
+t_room				*pop_node(t_queue **queue);
+void				free_queue(t_queue **queue);
+void				sort_paths(t_path **paths, int right);
+void				define_comp_num(t_path **paths, int num);
+t_path				*create_path(t_room *head, int len);
+void				add_path(t_path **paths, t_path *new);
+int					does_path_end(t_lem_in *lem_in, int room_id);
+t_path				**pathfinder(t_lem_in *lem_in);
+int					edmonds_karp(t_lem_in *lem_in);
+int					start_algo(t_lem_in *lem_in);
+void				find_path_backwards(t_lem_in *lem_in, int room_id);
+void				refresh_visited_and_lvl(t_room **rooms, int num);
+int					find_level(t_lem_in *lem_in, int prev, int curr);
+t_room				*find_last_room(t_room *head);
+int					count_turns(t_lem_in *l_i);
+void				set_true_prev(t_lem_in *lem_in);
+void				set_optimal_path(t_lem_in *lem_in, int n_new);
+t_room				*find_last_room(t_room *head);
+void				move_all_in_path(t_lem_in *l_i, t_room *room, int *is_start,
+									 int even);
+void				move_ants(t_lem_in *lem_in);
+void				free_paths(t_path **paths, int num);
+int					free_all(t_lem_in *lem_in);
 
 #endif

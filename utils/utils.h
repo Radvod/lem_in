@@ -15,7 +15,8 @@
 
 # include "../libft/libft.h"
 
-void	ft_error(char *str);
+int		free_len(int *len);
+int		error(int flag, char **str);
 char	*ft_strfromcpy(char *dst, const char *str, size_t len);
 int		str_free(char **str, int i);
 int		ft_check_space(const char *line);

@@ -12,6 +12,69 @@
 
 #include "lem_in.h"
 
+int		buff_free(char *buff)
+{
+	if (buff)
+		free(buff);
+	return (ERROR);
+}
+
+void	free_rooms(t_lem_in *lem_in)
+{
+	int i;
+
+	i = 0;
+	while (i < (lem_in)->room_num && (lem_in)->rooms)
+	{
+		free((lem_in)->rooms[i]->name);
+		free((lem_in)->rooms[i]);
+		i++;
+	}
+	if ((lem_in)->rooms)
+		free((lem_in)->rooms);
+}
+
+int		ft_str_free(char **str, int i)
+{
+	if (str)
+	{
+		while (str[i])
+		{
+			free(str[i]);
+			i++;
+		}
+		if (str)
+			free(str);
+	}
+	return (0);
+}
+
+int		free_all(t_lem_in *lem_in)
+{
+	int i;
+
+	i = 0;
+	if (lem_in)
+	{
+		while (i < (lem_in)->room_num && (lem_in)->link_arr)
+		{
+			if ((lem_in)->link_arr[i])
+				free((lem_in)->link_arr[i]);
+			i++;
+		}
+		if ((lem_in)->link_arr)
+			free((lem_in)->link_arr);
+		if ((lem_in)->rooms)
+			free_rooms(lem_in);
+		if ((lem_in)->paths)
+			free_paths((lem_in)->paths, (lem_in)->path_num);
+		if ((lem_in)->line)
+			str_free((lem_in)->line, 0);
+		free(lem_in);
+	}
+	return (ERROR);
+}
+
 void	free_paths(t_path **paths, int num)
 {
 	int i;
@@ -25,44 +88,4 @@ void	free_paths(t_path **paths, int num)
 	if (paths)
 		free(paths);
 	paths = NULL;
-}
-
-void	free_rooms(t_colony *colony)
-{
-	int i;
-
-	i = 0;
-	while (i < (colony)->room_num && (colony)->rooms)
-	{
-		free((colony)->rooms[i]->name);
-		free((colony)->rooms[i]);
-		i++;
-	}
-	if ((colony)->rooms)
-		free((colony)->rooms);
-}
-
-void		free_all(t_colony *colony)
-{
-	int i;
-
-	i = 0;
-	if (colony)
-	{
-		while (i < (colony)->room_num && (colony)->link_arr)
-		{
-			if ((colony)->link_arr[i])
-				free((colony)->link_arr[i]);
-			i++;
-		}
-		if ((colony)->link_arr)
-			free((colony)->link_arr);
-		if ((colony)->rooms)
-			free_rooms(colony);
-		if ((colony)->paths)
-			free_paths((colony)->paths, (colony)->path_num);
-		if ((colony)->line)
-			str_free((colony)->line, 0);
-		free(colony);
-	}
 }

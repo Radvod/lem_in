@@ -12,77 +12,86 @@
 
 #include "lem_in.h"
 
-void	in_end_room(t_colony *colony, t_room *room, t_queue **q, int i)
+void	in_end_room(t_lem_in *l, t_room *room, t_queue **q, int i)
 {
-	colony->link_arr[room->num][i] = 1;
-	colony->link_arr[i][room->num] = 2;
-	colony->rooms[i]->visited = 1;
-	find_path_backwards(colony, room->num);
+	l->link_arr[room->num][i] = 1;
+	l->link_arr[i][room->num] = 2;
+	l->rooms[i]->visited = 1;
+	find_path_backwards(l, room->num);
 	free_queue(q);
 }
 
-void		add_node(t_colony *colony, t_queue **q, t_room *room, int i)
+int		add_node(t_lem_in *l, t_queue **q, t_room *room, int i)
 {
 	t_queue		*new;
 
-	if (!(new = new_queue_node(colony->rooms[i])))
-		ft_error("Error");
+	if (!(new = new_queue_node(l->rooms[i])))
+	{
+		free_queue(q);
+		return (ERROR);
+	}
 	new->room->temp_prev = room;
 	new->room->visited = 1;
-	new->room->level = find_level(colony, room->num, new->room->num);
+	new->room->level = find_level(l, room->num, new->room->num);
 	push_node(q, new);
+	return (0);
 }
 
-void		traverse_queue(t_colony *colony, t_queue **q)
+int		traverse_queue(t_lem_in *l, t_queue **q)
 {
 	t_room		*room;
 	int			i;
 
 	room = pop_node(q);
 	i = 0;
-	while (i < colony->room_num)
+	while (i < l->room_num)
 	{
-		if (i == colony->room_num - 1 && colony->link_arr[room->num][i] == 3)
+		if (i == l->room_num - 1 && l->link_arr[room->num][i] == 3)
 		{
-			in_end_room(colony, room, q, i);
+			in_end_room(l, room, q, i);
 			break ;
 		}
-		else if (i != colony->room_num - 1 && colony->rooms[i]->visited == 0 &&
-				 (colony->link_arr[room->num][i] == 3 || colony->link_arr[room->num][i] == 2))
-			add_node(colony, q, room, i);
+		else if (i != l->room_num - 1 && l->rooms[i]->visited == 0 &&
+				 (l->link_arr[room->num][i] == 3 || l->link_arr[room->num][i] == 2))
+			if (add_node(l, q, room, i) == ERROR)
+				return (ERROR);
 		i++;
 	}
-}
-
-int		end_ed_karp(t_colony *colony)
-{
-	colony->paths = colony->paths_temp;
-	colony->path_num = colony->path_num_temp;
 	return (0);
 }
 
-int		edmonds_karp(t_colony *colony)
+int		end_ed_karp(t_lem_in *l)
+{
+	l->paths = l->paths_temp;
+	l->path_num = l->path_num_temp;
+	return (0);
+}
+
+int		edmonds_karp(t_lem_in *l)
 {
 	t_queue		*q;
 	int			n_new;
 
 	while (1)
 	{
-		refresh_visited_and_lvl(colony->rooms, colony->room_num);
-		q = new_queue_node(colony->rooms[0]);
+		refresh_visited_and_lvl(l->rooms, l->room_num);
+		q = new_queue_node(l->rooms[0]);
 		while (q)
-			traverse_queue(colony, &q);
-		if ((colony->paths = pathfinder(colony)) == NULL
-			|| (!(colony->paths_temp) && colony->path_num == 0))
-			 ft_error("Path from start to end does not exist");
-		n_new = count_turns(colony);
-		if (n_new < colony->n_turns)
-			set_optimal_path(colony, n_new);
+		{
+			if (traverse_queue(l, &q) == ERROR)
+				return (ERROR);
+		}
+		if ((l->paths = pathfinder(l)) == NULL
+			|| (!(l->paths_temp) && l->path_num == 0))
+			return (ERROR);
+		n_new = count_turns(l);
+		if (n_new < l->n_turns)
+			set_optimal_path(l, n_new);
 		else
 		{
-			free_paths(colony->paths, colony->path_num);
+			free_paths(l->paths, l->path_num);
 			break ;
 		}
 	}
-	return (end_ed_karp(colony));
+	return (end_ed_karp(l));
 }
